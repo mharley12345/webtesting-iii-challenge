@@ -1,43 +1,51 @@
 import React from "react";
-import renderer from "react-test-renderer";
-import { fireEvent, render } from "@testing-library/react";
-import Controls from "./Controls";
+import renderer from 'react-test-renderer'
+import { render } from '@testing-library/react'
+import '@testing-library/jest-dom/extend-expect'
 
-describe("<Controls />", () => {
-  it("matches Snapshot", () => {
-    const tree = renderer.create(<Controls />);
-    expect(tree.toJSON()).toMatchSnapshot();
-  });
-  it("should invoke a function toggle locked after button pressed", () => {
-    const toggleLocked = jest.fn();
-    const locked = true;
-    const closed = true;
+import Controls from './Controls'
 
-    const { getByText } = render(
-      <Controls toggleLocked={toggleLocked} locked={locked} closed={closed} />
-    );
-    fireEvent.click(getByText("Unlock Gate"));
-    expect(toggleLocked).toHaveBeenCalled();
-  });
-  it("should invoke a function toggle close after button pressed", () => {
-    const toggleClosed = jest.fn();
-    const locked = false;
-    const closed = false;
+describe('Controls />', () => {
+    it('renders', () => {
+        expect(render(<Controls />)).not.toBeNull()
+    })
 
-    const { getByText } = render(
-      <Controls toggleClosed={toggleClosed} locked={locked} closed={closed} />
-    );
-    fireEvent.click(getByText("Close Gate"));
-    expect(toggleClosed).toHaveBeenCalled();
-  });
-  it("Checking if the button is disabled", () => {
-    const { getByText } = render(<Controls locked={true} closed={true} />);
+    it('should match snapshot', () => {
+        const control = renderer.create(<Controls />)
 
-    expect(getByText("Open Gate").disabled).toBeTruthy();
-  });
-  it("Checking the button if disabled", () => {
-    const { getByText } = render(<Controls />);
-    expect(getByText("Lock Gate").disabled).toBeTruthy();
-  });
+        expect(control.toJSON()).toMatchSnapshot()
+    })
 
-});
+    it('unlocked and open = lock gate disabled and close gate clickable', () => {
+        const { getByText } = render(<Controls locked={false} closed={false}/>)
+        const closeBtn = getByText(/close gate/i)
+        const lockBtn = getByText(/lock gate/i)
+
+        expect(closeBtn).toHaveTextContent(/close gate/i)
+        expect(closeBtn).not.toBeDisabled()
+        expect(lockBtn).toHaveTextContent(/lock gate/i)
+        expect(lockBtn).toBeDisabled()
+    })
+
+    it('unlocked and closed = lock gate and open gate clickable', () => {
+        const { getByText } = render(<Controls locked={false} closed={true}/>)
+        const openBtn = getByText(/open gate/i)
+        const lockBtn = getByText(/lock gate/i)
+
+        expect(openBtn).toHaveTextContent(/open gate/i)
+        expect(openBtn).not.toBeDisabled()
+        expect(lockBtn).toHaveTextContent(/lock gate/i)
+        expect(lockBtn).not.toBeDisabled()
+    })
+
+    it('locked and closed = unlock gate clickable and close gate disabled', () => {
+        const { getByText } = render(<Controls locked={true} closed={true}/>)
+        const openBtn = getByText(/open gate/i)
+        const unlockBtn = getByText(/unlock gate/i)
+
+        expect(openBtn).toHaveTextContent(/open gate/i)
+        expect(openBtn).toBeDisabled()
+        expect(unlockBtn).toHaveTextContent(/unlock gate/i)
+        expect(unlockBtn).not.toBeDisabled()
+    })
+})
